@@ -6,10 +6,11 @@ services:
     ports:
       - 80:80
     volumes:
-      - ./docker/etc/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
-      - ./app:/app
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - ./:/app
     networks:
       - linfe
+
 
   php:
     container_name: php
@@ -17,7 +18,7 @@ services:
       context: .
       dockerfile: PHP.Dockerfile
     volumes:
-      - ./app:/app
+      - ./:/app
     hostname: api.linfe
     networks:
       - linfe
