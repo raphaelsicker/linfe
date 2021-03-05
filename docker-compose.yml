@@ -11,21 +11,21 @@ services:
     networks:
       - linfe
 
-
   php:
     container_name: php
+    hostname: api.linfe
     build:
       context: .
       dockerfile: PHP.Dockerfile
     volumes:
       - ./:/app
-    hostname: api.linfe
     networks:
       - linfe
 
   mysql:
     container_name: mysql
-    image: mariadb:latest
+    image: mysql:8
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: secret
       MYSQL_DATABASE: dev
@@ -33,6 +33,8 @@ services:
       - mysqldata:/var/lib/mysql
     ports:
       - 3306:3306
+    networks:
+      - linfe
 
   redis:
     container_name: redis
@@ -47,3 +49,4 @@ volumes:
 
 networks:
   linfe:
+    driver: bridge
