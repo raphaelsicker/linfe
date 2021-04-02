@@ -45,7 +45,7 @@ services:
       - linfe
 
 volumes:
-  mysqldata:
+  mysqldata: {}
 
 networks:
   linfe:
