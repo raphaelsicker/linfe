@@ -29,9 +29,9 @@ services:
       - ./docker/mysql:/docker-entrypoint-initdb.d
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: linfe
+      MYSQL_DATABASE: root
     ports:
-      - "3301:3306"
+      - "33060:3306"
     networks:
       - bubble
 

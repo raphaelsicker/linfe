@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Externals;
+namespace App\Externals\Base;
 
 
 use App\Helpers\Arr;
@@ -9,15 +9,32 @@ use App\Helpers\Str;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
-class LiApi
+abstract class LiApi
 {
+    protected string $urlGet = '/';
+    protected string $urlFind = '/#id/';
+
     /**
-     * @param string $relativePath
      * @param array $query
      * @return Response
      */
-    public static function get(string $relativePath, array $query = []): Response
+    public static function get(array $query = []): Response
     {
+        return Http::get(
+            self::makeUrl((new static())->urlGet),
+            Arr::merge($query, self::authQueries()) ?: null
+        );
+    }
+
+    /**
+     * @param string $id
+     * @param array $query
+     * @return Response
+     */
+    public static function find(string $id, array $query = []): Response
+    {
+        $relativePath = Str::replace((new static())->urlFind, ['id' => $id]);
+
         return Http::get(
             self::makeUrl($relativePath),
             Arr::merge($query, self::authQueries()) ?: null

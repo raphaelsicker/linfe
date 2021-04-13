@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\OrderService;
+use App\Services\Sincronizadores\UltimosPedidosService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class OrderController extends Controller
+class PedidoController extends Controller
 {
     /**
-     * @var OrderService
+     * @var UltimosPedidosService
      */
     private $orderService;
 
-    public function __construct(OrderService $orderService)
+    public function __construct(UltimosPedidosService $orderService)
     {
         $this->orderService = $orderService;
     }
@@ -26,7 +26,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $response = $this->orderService->update();
+        $response = $this->orderService->sincronizar();
 
         return response()->json(
             $response->json() ?? $response->body()

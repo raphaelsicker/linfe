@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Services;
+namespace App\Services\Sincronizadores;
 
 
 use App\Externals\Base\LiApi;
@@ -9,9 +9,16 @@ use App\Externals\LiApiPedido;
 use App\Helpers\Str;
 use Carbon\Carbon;
 
-class PedidoService
+class UltimosPedidosService
 {
-    public function atualizar(?Carbon $atualizadoEm = null)
+    private ClienteService $clienteService;
+
+    public function __construct(ClienteService $clienteService)
+    {
+        $this->clienteService = $clienteService;
+    }
+
+    public function sincronizar(?Carbon $atualizadoEm = null)
     {
         $pedidosIds = $this->buscarIdsDosUltimosPedidos(
             $atualizadoEm ?? Carbon::now('-03:00')->subDay(3)
@@ -63,6 +70,7 @@ class PedidoService
 
     private function salvarPedido(?object $pedido)
     {
+        $cliente = $this->clienteService->sincronizar($pedido?->cliente?->id);
     }
 
 }
