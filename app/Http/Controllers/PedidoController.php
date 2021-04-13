@@ -2,13 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Http;
 
-class TestController extends Controller
+class OrderController extends Controller
 {
+    /**
+     * @var OrderService
+     */
+    private $orderService;
+
+    public function __construct(OrderService $orderService)
+    {
+        $this->orderService = $orderService;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -16,10 +26,10 @@ class TestController extends Controller
      */
     public function index()
     {
-        $response = Http::get('https://api.awsli.com.br/v1/pedido/search/?format=json&chave_api=d5c477652947acd9b355&chave_aplicacao=447a7751-fa31-41bb-9073-b9fd9854eae6');
+        $response = $this->orderService->update();
 
         return response()->json(
-            $response->json()
+            $response->json() ?? $response->body()
         );
     }
 

@@ -9,9 +9,6 @@ services:
       args:
         APP_STAGE: ${APP_STAGE}
         APP_ENV: ${APP_ENV}
-        XDEBUG_MODE: ${XDEBUG_MODE}
-        XDEBUG_IDEKEY: ${XDEBUG_IDEKEY}
-        XDEBUG_HANDLER: ${XDEBUG_HANDLER}
     depends_on:
       - mysql.linfe
     environment:

@@ -6,14 +6,6 @@ ARG APP_STAGE
 ENV APP_STAGE $APP_STAGE
 ARG APP_ENV
 ENV APP_ENV $APP_ENV
-ARG XDEBUG_MODE
-ENV XDEBUG_MODE $XDEBUG_MODE
-ARG XDEBUG_IDEKEY
-ENV XDEBUG_IDEKEY $XDEBUG_IDEKEY
-ARG XDEBUG_HANDLER
-ENV XDEBUG_HANDLER $XDEBUG_HANDLER
-ARG XDEBUG_PORT
-ENV XDEBUG_PORT $XDEBUG_PORT
 
 RUN apk --update add --no-cache \
     ${PHPIZE_DEPS} \
@@ -70,20 +62,6 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 RUN docker-php-ext-install zip xml posix ctype pcntl
 
-RUN if [ "$APP_STAGE" == "dev" ]; then \
-    apk add --no-cache $PHPIZE_DEPS \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug \
-    && echo "xdebug.mode=$XDEBUG_MODE" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_handler=$XDEBUG_HANDLER" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.idekey=$XDEBUG_IDEKEY" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_autostart=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_port=$XDEBUG_PORT" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && docker-php-ext-enable xdebug; \
-fi
-
 COPY . /app
 
 COPY docker/config/ /
@@ -97,6 +75,16 @@ RUN if [ "$APP_STAGE" != "dev" ] ; then \
 RUN if [ "$APP_STAGE" == "dev" ] ; then \
         composer install; \
     fi
+
+RUN if [ "$APP_STAGE" == "dev" ]; then \
+    apk add --no-cache $PHPIZE_DEPS \
+    && pecl install xdebug \
+    && docker-php-ext-enable xdebug \
+    && echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.remote_handler=dbgp" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.idekey=LINFE" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.client_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini; \
+fi
 
 RUN addgroup -g 1000 -S www \
     && adduser -u 1000 -D -S -G www -h /app -g www www \
