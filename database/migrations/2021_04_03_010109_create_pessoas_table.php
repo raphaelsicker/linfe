@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\Sexo;
-use App\Enums\TipoDePessoa;
+use App\Enums\Gender;
+use App\Enums\PersonType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -24,8 +24,8 @@ class CreatePessoasTable extends Migration
             $table->string('data_nascimento')->nullable();
             $table->bigInteger('grupo_id')->nullable();
             $table->bigInteger('li_id')->nullable();
-            $table->enum('tipo_de_pessoa', TipoDePessoa::keys());
-            $table->enum('sexo', Sexo::keys())->nullable();
+            $table->enum('tipo_de_pessoa', PersonType::keys());
+            $table->enum('sexo', Gender::keys())->nullable();
         });
     }
 

@@ -24,5 +24,4 @@ class Str extends \Illuminate\Support\Str
 
         return $string;
     }
-
 }

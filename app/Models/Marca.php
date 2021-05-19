@@ -2,9 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Class Marca
+ * @package App\Models
+ * @mixin Builder
+ */
 class Marca extends Model
 {
     use HasFactory;
@@ -12,6 +18,7 @@ class Marca extends Model
     protected $fillable = [
         'nome',
         'apelido',
-        'descricao'
+        'descricao',
+        'li_id'
     ];
 }

@@ -6,7 +6,7 @@ namespace App\Enums;
 
 use App\Enums\Base\Enum;
 
-class TipoDeDocumento extends Enum
+class DocumentType extends Enum
 {
     const CPF = 'cpf';
     const CNPJ = 'cnpj';

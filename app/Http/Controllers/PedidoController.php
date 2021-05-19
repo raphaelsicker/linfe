@@ -2,22 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Sincronizadores\UltimosPedidosService;
+use App\Services\Sync\PedidoSync;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class PedidoController extends Controller
 {
-    /**
-     * @var UltimosPedidosService
-     */
-    private $orderService;
-
-    public function __construct(UltimosPedidosService $orderService)
-    {
-        $this->orderService = $orderService;
-    }
+    public function __construct(private PedidoSync $pedidoSync) {}
 
     /**
      * Display a listing of the resource.
@@ -26,7 +18,7 @@ class PedidoController extends Controller
      */
     public function index()
     {
-        $response = $this->orderService->sincronizar();
+        $response = $this->pedidoSync->run();
 
         return response()->json(
             $response->json() ?? $response->body()

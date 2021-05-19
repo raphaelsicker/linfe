@@ -6,7 +6,7 @@ namespace App\Enums;
 
 use App\Enums\Base\Enum;
 
-class TipoDePessoa extends Enum
+class PersonType extends Enum
 {
     const PF = 'pf';
     const PJ = 'pj';

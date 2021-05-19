@@ -19,11 +19,11 @@ class CreateEnderecosTable extends Migration
             $table->id();
             $table->boolean('principal');
             $table->string('endereco');
-            $table->string('numero');
-            $table->string('complemento');
-            $table->string('bairro');
-            $table->string('referencia');
-            $table->integer('cep');
+            $table->string('numero')->nullable();
+            $table->string('complemento')->nullable();
+            $table->string('bairro')->nullable();
+            $table->string('referencia')->nullable();
+            $table->integer('cep')->nullable();
             $table->timestamps();
 
             $table->foreignIdFor(Pessoa::class)->constrained();
