@@ -13,6 +13,7 @@ use App\Helpers\Url;
 use App\Models\Produto;
 use App\Models\ProdutoPreco;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Throwable;
 
 class ProdutoSync
@@ -52,7 +53,7 @@ class ProdutoSync
     private function syncProdutoPreco(
         object $produto,
         int $produtoId
-    ): ProdutoPreco {
+    ): Collection {
         $prices = [
             [
                 'tipo' => PriceType::COST,
@@ -69,7 +70,7 @@ class ProdutoSync
             ],
         ];
 
-        return ProdutoPreco::import(
+        return ProdutoPreco::importMany(
             Arr::havingKey($prices, 'valor'),
             ['produto_id' => $produtoId]
         );

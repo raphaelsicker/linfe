@@ -11,6 +11,7 @@ use App\Enums\PhoneType;
 use App\Exceptions\Cliente\ClienteNotCreatedException;
 use App\Exceptions\Cliente\ClienteNotFoundException;
 use App\Exceptions\Model\ModelImportErrorException;
+use App\Exceptions\Model\ModelImportManyErrorException;
 use App\Externals\ClienteApi;
 use App\Helpers\Arr;
 use App\Helpers\Str;
@@ -19,6 +20,7 @@ use App\Models\Documento;
 use App\Models\Email;
 use App\Models\Telefone;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Throwable;
 
 class ClienteSync
@@ -62,13 +64,13 @@ class ClienteSync
     /**
      * @param object $clienteApi
      * @param int $clienteId
-     * @return Documento
-     * @throws ModelImportErrorException
+     * @return Collection
+     * @throws ModelImportManyErrorException
      */
     private function syncDocs(
         object $clienteApi,
         int $clienteId
-    ): Documento {
+    ): Collection {
         $docs = [
             [
                 'tipo' => DocumentType::CPF,
@@ -82,7 +84,7 @@ class ClienteSync
             ],
         ];
 
-        return Documento::import(
+        return Documento::importMany(
             Arr::havingKey($docs, 'documento'),
             ['pessoa_id' => $clienteId]
         );
@@ -91,13 +93,13 @@ class ClienteSync
     /**
      * @param object $clienteApi
      * @param int $clienteId
-     * @return Telefone
-     * @throws ModelImportErrorException
+     * @return Collection
+     * @throws ModelImportManyErrorException
      */
     private function syncPhones(
         object $clienteApi,
         int $clienteId
-    ): Telefone {
+    ): Collection {
         $phones = [
             [
                 'tipo' => PhoneType::LANDLINE,
@@ -111,7 +113,7 @@ class ClienteSync
             ],
         ];
 
-        return Telefone::import(
+        return Telefone::importMany(
             Arr::havingKey($phones, 'numero'),
             ['pessoa_id' => $clienteId]
         );
@@ -120,13 +122,13 @@ class ClienteSync
     /**
      * @param object $clienteApi
      * @param int $clienteId
-     * @return Email
-     * @throws ModelImportErrorException
+     * @return Collection
+     * @throws ModelImportManyErrorException
      */
     private function syncEmails(
         object $clienteApi,
         int $clienteId
-    ): Email {
+    ): Collection {
         $emails = [
             [
                 'tipo' => EmailType::PERSONAL,
@@ -134,7 +136,7 @@ class ClienteSync
             ]
         ];
 
-        return Email::import(
+        return Email::importMany(
             Arr::havingKey($emails, 'email'),
             ['pessoa_id' => $clienteId]
         );

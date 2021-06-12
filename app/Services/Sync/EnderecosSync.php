@@ -4,32 +4,44 @@
 namespace App\Services\Sync;
 
 
+use App\Exceptions\Endereco\EnderecoImportErrorException;
 use App\Exceptions\Model\ModelImportErrorException;
 use App\Helpers\Obj;
 use App\Models\Cidade;
 use App\Models\Endereco;
+use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
+use Throwable;
 
 class EnderecosSync
 {
     /**
-     * @param object $enderecosApi
+     * @param iterable $enderecosApi
      * @param int $clienteId
-     * @return Endereco
-     * @throws ModelImportErrorException
+     * @return Collection
+     * @throws EnderecoImportErrorException
      */
     public function run(
-        object $enderecosApi,
+        iterable $enderecosApi,
         int $clienteId
-    ): Endereco {
-        foreach ($enderecosApi as $endereco) {
-            $endereco->cidade_id = $this->getCidadeId(
-                $endereco->cidade,
-                $endereco->estado
-            );
-            $enderecos[] = Obj::toArray($endereco);
-        }
+    ): Collection {
+        try {
+            foreach ($enderecosApi as $endereco) {
+                $endereco->cidade_id = $this->getCidadeId(
+                    $endereco->cidade,
+                    $endereco->estado
+                );
+                $enderecos[] = Obj::toArray($endereco);
+            }
 
-        return Endereco::import($enderecos, ['pessoa_id' => $clienteId]);
+            return Endereco::importMany($enderecos, ['pessoa_id' => $clienteId]);
+        } catch (Throwable $exception) {
+            throw new EnderecoImportErrorException(
+                "Erro ao criar a Entrega",
+                Response::HTTP_INTERNAL_SERVER_ERROR,
+                $exception
+            );
+        }
     }
 
     /**

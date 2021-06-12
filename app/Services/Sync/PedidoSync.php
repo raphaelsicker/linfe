@@ -4,9 +4,12 @@
 namespace App\Services\Sync;
 
 
+use App\Exceptions\Entrega\EntregaNotCreatedException;
 use App\Exceptions\Pedido\PedidoImportErrorException;
 use App\Externals\PedidoApi;
+use App\Models\Cliente;
 use App\Models\Pedido;
+use App\Models\PedidoEntrega;
 use Carbon\Carbon;
 use Illuminate\Http\Response;
 use Throwable;
@@ -16,7 +19,7 @@ class PedidoSync
     public function __construct(
         private ClienteSync $clienteSync,
         private ProdutoSync $produtoSync,
-        private EntregaSync $entregaSync
+        private EnderecosSync $enderecosSync
     ) {}
 
     /**
@@ -62,12 +65,40 @@ class PedidoSync
                 'li_id' => $pedidoApi->numero
             ], ['li_id' => $pedidoApi->numero]);
 
-            $entrega = $this->entregaSync->run($pedido, $cliente, $pedidoApi->endereco_entrega);
+            $entrega = $this->entregaSync($pedido, $cliente, $pedidoApi->endereco_entrega);
 
             return $pedido ?? false;
         } catch (Throwable $exception) {
             throw new PedidoImportErrorException(
                 "Erro ao importar o pedido: ",
+                Response::HTTP_BAD_REQUEST,
+                $exception
+            );
+        }
+    }
+
+    /**
+     * @param Pedido $pedido
+     * @param Cliente $cliente
+     * @param object $enderecoApi
+     * @return PedidoEntrega
+     * @throws EntregaNotCreatedException
+     */
+    public function entregaSync(
+        Pedido $pedido,
+        Cliente $cliente,
+        object $enderecoApi
+    ): PedidoEntrega {
+        try {
+            $endereco = $this->enderecosSync->run([$enderecoApi],$cliente->id)?->first();
+
+            return PedidoEntrega::firstOrCreate([
+                'pedido_id' => $pedido->id,
+                'endereco_id' => $endereco->id
+            ]);
+        } catch (Throwable $exception) {
+            throw new EntregaNotCreatedException(
+                "Erro ao criar a Entrega",
                 Response::HTTP_BAD_REQUEST,
                 $exception
             );

@@ -75,22 +75,45 @@ class Model extends \Illuminate\Database\Eloquent\Model
      * @throws ModelImportErrorException
      */
     public static function import(
-        array $items,
+        array $item,
         array $fks
     ): static {
         try {
             $model = new static();
             $fillable = $model->getFillable();
 
-            foreach($items as $item) {
-                $filledItem = Arr::merge($item, $fks);
-                $fillableItem = Arr::only($filledItem, $fillable);
-                $model->firstOrCreate($fillableItem);
-            }
+            $filledItem = Arr::merge($item, $fks);
+            $fillableItem = Arr::only($filledItem, $fillable);
 
-            return $model;
+            return $model->firstOrCreate($fillableItem);
         } catch (Throwable $t) {
             throw new ModelImportErrorException("Erro ao importar os dados", Response::HTTP_BAD_REQUEST, $t);
+        }
+    }
+
+    /**
+     * Importa os campos de um registro
+     * @param array $items
+     * @param array $fks
+     * @return Collection
+     * @throws ModelImportManyErrorException
+     */
+    public static function importMany(
+        array $items,
+        array $fks
+    ): Collection {
+        try {
+            foreach($items as $item) {
+                $imported[] = self::import($item, $fks);
+            }
+
+            return collect($imported ?? []);
+        } catch (Throwable $exception) {
+            throw new ModelImportManyErrorException(
+                "Erro ao importar os dados",
+                Response::HTTP_INTERNAL_SERVER_ERROR,
+                $exception
+            );
         }
     }
 }
