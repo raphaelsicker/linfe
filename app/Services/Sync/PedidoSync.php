@@ -4,9 +4,10 @@
 namespace App\Services\Sync;
 
 
+use App\Exceptions\Pedido\PedidoImportErrorException;
 use App\Externals\PedidoApi;
-use App\Helpers\Arr;
 use Carbon\Carbon;
+use Illuminate\Http\Response;
 use Throwable;
 
 class PedidoSync
@@ -33,7 +34,7 @@ class PedidoSync
 
             return true;
         } catch (Throwable $t) {
-            return false;
+            throw new PedidoImportErrorException("Erro ao importar o pedido", Response::HTTP_BAD_REQUEST, $t);
         }
     }
 
@@ -43,16 +44,18 @@ class PedidoSync
      */
     private function storePedido(object $pedido)
     {
-        $clienteId = $this->clienteSync->run($pedido->cliente);
+        $cliente = $this->clienteSync->run($pedido->cliente);
 
         foreach ($pedido->itens ?? [] as $item) {
-            [$produtoId, $variacoes] = $this->produtoSync->run($item);
+            $items[] = $this->produtoSync->run($item);
         }
 
         $pedido = [
-            'cliente_id' => $clienteId,
-            'items' => $items
+            'cliente_id' => $cliente->id,
+
         ];
+
+        $entrega = $this->entregaSync->run($pedidoId, $cliente);
 
         return $pedido ?? false;
     }

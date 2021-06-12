@@ -8,7 +8,9 @@ use App\Enums\DocumentType;
 use App\Enums\EmailType;
 use App\Enums\Gender;
 use App\Enums\PhoneType;
-use App\Enums\ReturnType;
+use App\Exceptions\Cliente\ClienteNotCreatedException;
+use App\Exceptions\Cliente\ClienteNotFoundException;
+use App\Exceptions\Model\ModelImportErrorException;
 use App\Externals\ClienteApi;
 use App\Helpers\Arr;
 use App\Helpers\Obj;
@@ -19,19 +21,21 @@ use App\Models\Documento;
 use App\Models\Email;
 use App\Models\Endereco;
 use App\Models\Telefone;
+use Illuminate\Http\Response;
 use Throwable;
 
 class ClienteSync
 {
     /**
      * @param object $cliente
-     * @return int|null
+     * @return Cliente|null
+     * @throws ClienteNotCreatedException
      */
-    public function run(object $cliente): ?int
+    public function run(object $cliente): ?Cliente
     {
         try {
             if(!$clienteId = $cliente->id ?? false) {
-                return null;
+                throw new ClienteNotFoundException("Cliente não encontrado");
             }
 
             $clienteApi = ClienteApi::find($clienteId);
@@ -50,21 +54,22 @@ class ClienteSync
             $this->syncEmails($clienteApi, $cliente->id);
             $this->syncAddress($clienteApi, $cliente->id);
 
-            return $cliente->id ?? null;
+            return $cliente;
         } catch (Throwable $t) {
-            return null;
+            throw new ClienteNotCreatedException("Erro ao importar o cliente", Response::HTTP_BAD_REQUEST, $t);
         }
     }
 
     /**
      * @param object $clienteApi
      * @param int $clienteId
-     * @return bool
+     * @return Documento
+     * @throws ModelImportErrorException
      */
     private function syncDocs(
         object $clienteApi,
         int $clienteId
-    ): bool {
+    ): Documento {
         $docs = [
             [
                 'tipo' => DocumentType::CPF,
@@ -86,12 +91,14 @@ class ClienteSync
 
     /**
      * @param object $clienteApi
-     * @return array
+     * @param int $clienteId
+     * @return Telefone
+     * @throws ModelImportErrorException
      */
     private function syncPhones(
         object $clienteApi,
         int $clienteId
-    ): bool {
+    ): Telefone {
         $phones = [
             [
                 'tipo' => PhoneType::LANDLINE,
@@ -114,12 +121,13 @@ class ClienteSync
     /**
      * @param object $clienteApi
      * @param int $clienteId
-     * @return bool
+     * @return Email
+     * @throws ModelImportErrorException
      */
     private function syncEmails(
         object $clienteApi,
         int $clienteId
-    ): bool {
+    ): Email {
         $emails = [
             [
                 'tipo' => EmailType::PERSONAL,
@@ -136,12 +144,13 @@ class ClienteSync
     /**
      * @param object $clienteApi
      * @param int $clienteId
-     * @return bool
+     * @return Endereco
+     * @throws ModelImportErrorException
      */
     private function syncAddress(
         object $clienteApi,
         int $clienteId
-    ): bool {
+    ): Endereco {
         foreach ($clienteApi->enderecos as $endereco) {
             $endereco->cidade_id = $this->getCidadeId(
                 $endereco->cidade,

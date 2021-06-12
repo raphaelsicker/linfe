@@ -8,6 +8,7 @@ use App\Helpers\Arr;
 use App\Helpers\Str;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use JetBrains\PhpStorm\ArrayShape;
 
 class LiApi
 {
@@ -58,10 +59,11 @@ class LiApi
         ]);
     }
 
-    /**
-     * @return array|null
-     */
-    private static function authQueries(): ?array
+    #[ArrayShape([
+        'chave_api' => "string",
+        'chave_aplicacao' => "string"
+    ])]
+    private static function authQueries(): array
     {
         return [
             'chave_api' => env('LI_API_KEY_ERP'),

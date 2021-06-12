@@ -3,8 +3,12 @@
 
 namespace App\Models\Base;
 
+use App\Exceptions\Model\ModelImportErrorException;
+use App\Exceptions\Model\ModelImportManyErrorException;
 use App\Helpers\Arr;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Throwable;
 
 /**
@@ -35,26 +39,33 @@ class Model extends \Illuminate\Database\Eloquent\Model
     /**
      * Importa vários objetos
      * @param array[] $arrays
-     * @return bool
+     * @return Collection
      */
-    public static function apiImportMany(array $arrays): bool
+    public static function apiImportMany(array $arrays): Collection
     {
         try {
             foreach ($arrays as $array) {
-                self::apiImport($array);
+                $imported[] = self::apiImport($array);
             }
 
-            return true;
-        } catch (Throwable) {
-            return false;
+            return collect($imported ?? []);
+        } catch (Throwable $t) {
+            throw new ModelImportManyErrorException("Erro ao importação multipla", Response::HTTP_BAD_REQUEST, $t);
         }
 
     }
 
+    /**
+     * Importa os campos de um registro
+     * @param array $items
+     * @param array $fks
+     * @return static
+     * @throws ModelImportErrorException
+     */
     public static function import(
         array $items,
         array $fks
-    ): bool {
+    ): static {
         try {
             $model = new static();
             $fillable = $model->getFillable();
@@ -65,9 +76,9 @@ class Model extends \Illuminate\Database\Eloquent\Model
                 $model->firstOrCreate($fillableItem);
             }
 
-            return true;
+            return $model;
         } catch (Throwable $t) {
-            return false;
+            throw new ModelImportErrorException("Erro ao importar os dados", Response::HTTP_BAD_REQUEST, $t);
         }
     }
 }

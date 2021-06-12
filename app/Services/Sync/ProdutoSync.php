@@ -5,12 +5,15 @@ namespace App\Services\Sync;
 
 
 use App\Enums\PriceType;
+use App\Exceptions\Produto\ProdutoImportErrorException;
 use App\Externals\ProdutoApi;
 use App\Helpers\Arr;
 use App\Helpers\Obj;
 use App\Helpers\Url;
 use App\Models\Produto;
 use App\Models\ProdutoPreco;
+use Illuminate\Http\Response;
+use Throwable;
 
 class ProdutoSync
 {
@@ -21,23 +24,30 @@ class ProdutoSync
 
     public function run(object $item): array
     {
-        $produtoApi = ProdutoApi::find(Url::extractId($item->produto ?? ''));
-        $produtoPaiApi = ProdutoApi::find(Url::extractId($item->produto_pai ?? ''));
-        $variacoes = $this->variacaoSync->run($produtoApi->variacoes);
+        try {
+            $produtoApi = ProdutoApi::find(Url::extractId($item->produto ?? ''));
+            $produtoPaiApi = ProdutoApi::find(Url::extractId($item->produto_pai ?? ''));
+            $variacoes = $this->variacaoSync->run($produtoApi->variacoes);
 
-        $fullItem = Obj::mergeNotNull($item, $produtoPaiApi, $produtoApi);
-        $fullItem->marca_id = $this->marcaSync->run($produtoPaiApi->marca ?? '');
+            $fullItem = Obj::mergeNotNull($item, $produtoPaiApi, $produtoApi);
+            $fullItem->marca_id = $this->marcaSync->run($produtoPaiApi->marca ?? '');
 
-        $produto = Produto::apiImport((array) $fullItem);
-        $this->syncProdutoPreco($fullItem, $produto->id);
+            $produto = Produto::apiImport((array) $fullItem);
+            $this->syncProdutoPreco($fullItem, $produto->id);
 
-        return [$produto->id ?? null, $variacoes];
+            return [
+                'produto' => $produto,
+                'variacoes' => $variacoes
+            ];
+        } catch (Throwable $t) {
+            throw new ProdutoImportErrorException("Erro ao importar o Produto", Response::HTTP_BAD_REQUEST, $t);
+        }
     }
 
     private function syncProdutoPreco(
         object $produto,
         int $produtoId
-    ): bool {
+    ): ProdutoPreco {
         $prices = [
             [
                 'tipo' => PriceType::COST,
