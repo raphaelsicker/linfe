@@ -16,7 +16,7 @@ class CreateVariacoesTable extends Migration
         Schema::create('variacoes', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
-            $table->integer('li_id');
+            $table->bigInteger('li_id')->nullable();
             $table->foreignId('grade_id')->constrained();
             $table->timestamps();
         });

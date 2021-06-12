@@ -31,7 +31,7 @@ class CreateProdutosTable extends Migration
             $table->decimal('peso')->nullable();
             $table->string('ncm');
             $table->string('sku');
-            $table->integer('li_id')->nullable();
+            $table->bigInteger('li_id')->nullable();
 
             $table->timestamps();
         });

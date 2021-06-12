@@ -17,7 +17,7 @@ class CreateGradesTable extends Migration
             $table->id();
             $table->string('nome');
             $table->string('descricao')->nullable();
-            $table->integer('li_id');
+            $table->bigInteger('li_id')->nullable();
             $table->timestamps();
         });
     }

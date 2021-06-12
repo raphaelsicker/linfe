@@ -13,19 +13,18 @@ use App\Exceptions\Cliente\ClienteNotFoundException;
 use App\Exceptions\Model\ModelImportErrorException;
 use App\Externals\ClienteApi;
 use App\Helpers\Arr;
-use App\Helpers\Obj;
 use App\Helpers\Str;
-use App\Models\Cidade;
 use App\Models\Cliente;
 use App\Models\Documento;
 use App\Models\Email;
-use App\Models\Endereco;
 use App\Models\Telefone;
 use Illuminate\Http\Response;
 use Throwable;
 
 class ClienteSync
 {
+    public function __construct(private EnderecosSync $enderecosSync) {}
+
     /**
      * @param object $cliente
      * @return Cliente|null
@@ -52,7 +51,7 @@ class ClienteSync
             $this->syncDocs($clienteApi, $cliente->id);
             $this->syncPhones($clienteApi, $cliente->id);
             $this->syncEmails($clienteApi, $cliente->id);
-            $this->syncAddress($clienteApi, $cliente->id);
+            $this->enderecosSync->run($clienteApi->enderecos, $cliente->id);
 
             return $cliente;
         } catch (Throwable $t) {
@@ -139,42 +138,5 @@ class ClienteSync
             Arr::havingKey($emails, 'email'),
             ['pessoa_id' => $clienteId]
         );
-    }
-
-    /**
-     * @param object $clienteApi
-     * @param int $clienteId
-     * @return Endereco
-     * @throws ModelImportErrorException
-     */
-    private function syncAddress(
-        object $clienteApi,
-        int $clienteId
-    ): Endereco {
-        foreach ($clienteApi->enderecos as $endereco) {
-            $endereco->cidade_id = $this->getCidadeId(
-                $endereco->cidade,
-                $endereco->estado
-            );
-            $enderecos[] = Obj::toArray($endereco);
-        }
-
-        return Endereco::import($enderecos, ['pessoa_id' => $clienteId]);
-    }
-
-    /**
-     * @param string $cidade
-     * @param string $estado
-     * @return int|null
-     */
-    private function getCidadeId(
-        string $cidade,
-        string $estado
-    ): ?int {
-        return Cidade::join('estados', 'estado_id', 'estados.id')
-            ->where('cidades.nome', $cidade)
-            ->where('uf', $estado)
-            ->first('cidades.*')
-            ->id ?? null;
     }
 }

@@ -18,7 +18,7 @@ class CreateMarcasTable extends Migration
             $table->string('nome');
             $table->string('apelido')->nullable();
             $table->string('descricao')->nullable();
-            $table->integer('li_id');
+            $table->bigInteger('li_id')->nullable();
             $table->timestamps();
         });
     }

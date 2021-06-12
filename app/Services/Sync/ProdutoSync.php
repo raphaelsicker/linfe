@@ -22,6 +22,11 @@ class ProdutoSync
         private VariacaoSync $variacaoSync
     ) {}
 
+    /**
+     * @param object $item
+     * @return array
+     * @throws ProdutoImportErrorException
+     */
     public function run(object $item): array
     {
         try {
@@ -30,7 +35,7 @@ class ProdutoSync
             $variacoes = $this->variacaoSync->run($produtoApi->variacoes);
 
             $fullItem = Obj::mergeNotNull($item, $produtoPaiApi, $produtoApi);
-            $fullItem->marca_id = $this->marcaSync->run($produtoPaiApi->marca ?? '');
+            $fullItem->marca_id = $this->marcaSync->run($produtoPaiApi->marca ?? '')?->id;
 
             $produto = Produto::apiImport((array) $fullItem);
             $this->syncProdutoPreco($fullItem, $produto->id);

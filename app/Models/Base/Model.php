@@ -3,6 +3,7 @@
 
 namespace App\Models\Base;
 
+use App\Exceptions\Model\ModelApiImportErrorException;
 use App\Exceptions\Model\ModelImportErrorException;
 use App\Exceptions\Model\ModelImportManyErrorException;
 use App\Helpers\Arr;
@@ -22,24 +23,35 @@ class Model extends \Illuminate\Database\Eloquent\Model
      * Importa um objeto
      * @param array $array
      * @return Model|$this
+     * @throws ModelApiImportErrorException
      */
     public static function apiImport(array $array): Model | static
     {
-        $model = new static();
-        $toImport = collect($array)
-            ->only($model->fillable)
-            ->put('li_id', $array['id'] ?? null);
+        try{
+            $model = new static();
 
-        return $model->updateOrCreate(
-            $toImport->toArray(),
-            $toImport->only('li_id')->toArray()
-        );
+            $toImport = collect($array)
+                ->only($model->fillable)
+                ->put('li_id', $array['id'] ?? null);
+
+            return $model->updateOrCreate(
+                $toImport->toArray(),
+                $toImport->only('li_id')->toArray()
+            );
+        } catch (Throwable $exception) {
+            throw new ModelApiImportErrorException(
+                "Erro ao importação de api",
+                Response::HTTP_BAD_REQUEST,
+                $exception
+            );
+        }
     }
 
     /**
      * Importa vários objetos
      * @param array[] $arrays
      * @return Collection
+     * @throws ModelImportManyErrorException
      */
     public static function apiImportMany(array $arrays): Collection
     {
