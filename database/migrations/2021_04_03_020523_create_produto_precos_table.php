@@ -15,6 +15,9 @@ class CreateProdutoPrecosTable extends Migration
     {
         Schema::create('produto_precos', function (Blueprint $table) {
             $table->id();
+            $table->string('tipo');
+            $table->decimal('valor');
+            $table->foreignId('produto_id');
             $table->timestamps();
         });
     }

@@ -8,109 +8,149 @@ use App\Enums\DocumentType;
 use App\Enums\EmailType;
 use App\Enums\Gender;
 use App\Enums\PhoneType;
+use App\Enums\ReturnType;
 use App\Externals\ClienteApi;
 use App\Helpers\Arr;
+use App\Helpers\Obj;
+use App\Helpers\Str;
 use App\Models\Cidade;
 use App\Models\Cliente;
+use App\Models\Documento;
+use App\Models\Email;
+use App\Models\Endereco;
+use App\Models\Telefone;
 use Throwable;
 
 class ClienteSync
 {
     /**
-     * @param array $cliente
+     * @param object $cliente
      * @return int|null
      */
-    public function run(array $cliente): ?int
+    public function run(object $cliente): ?int
     {
         try {
-            if(!$clienteId = $cliente['id'] ?? false) {
+            if(!$clienteId = $cliente->id ?? false) {
                 return null;
             }
 
             $clienteApi = ClienteApi::find($clienteId);
 
             $cliente = Cliente::updateOrCreate([
-                'nome' => $clienteApi['nome'],
-                'razao_social' => $clienteApi['razao_social'],
-                'data_nascimento' => $clienteApi['data_nascimento'],
-                'sexo' => $clienteApi['sexo'] ?: Gender::OTHERS,
+                'nome' => $clienteApi->nome,
+                'razao_social' => $clienteApi->razao_social,
+                'data_nascimento' => $clienteApi->data_nascimento,
+                'sexo' => $clienteApi->sexo ?: Gender::OTHERS,
                 'li_id' => $clienteId,
-                'tipo_de_pessoa' => strtolower($clienteApi['tipo'])
+                'tipo_de_pessoa' => Str::lower($clienteApi->tipo)
             ], ['li_id' => $clienteId]);
 
-            $cliente->documentos()->createMany($this->getDocs($clienteApi));
-            $cliente->telefones()->createMany($this->getPhones($clienteApi));
-            $cliente->emails()->createMany($this->getEmails($clienteApi));
-            $cliente->enderecos()->createMany($this->getAddress($clienteApi));
+            $this->syncDocs($clienteApi, $cliente->id);
+            $this->syncPhones($clienteApi, $cliente->id);
+            $this->syncEmails($clienteApi, $cliente->id);
+            $this->syncAddress($clienteApi, $cliente->id);
 
             return $cliente->id ?? null;
-        } catch (Throwable) {
+        } catch (Throwable $t) {
             return null;
         }
     }
 
     /**
-     * @param array $clienteApi
-     * @return array[]
+     * @param object $clienteApi
+     * @param int $clienteId
+     * @return bool
      */
-    private function getDocs(array $clienteApi): array
-    {
+    private function syncDocs(
+        object $clienteApi,
+        int $clienteId
+    ): bool {
         $docs = [
             [
                 'tipo' => DocumentType::CPF,
-                'documento' => $clienteApi['cpf']
+                'documento' => $clienteApi->cpf
             ], [
                 'tipo' => DocumentType::CNPJ,
-                'documento' => $clienteApi['cnpj']
+                'documento' => $clienteApi->cnpj
             ], [
                 'tipo' => DocumentType::RG,
-                'documento' => $clienteApi['rg']
+                'documento' => $clienteApi->rg
             ],
         ];
 
-        return Arr::havingKey($docs, 'documento');
+        return Documento::import(
+            Arr::havingKey($docs, 'documento'),
+            ['pessoa_id' => $clienteId]
+        );
     }
 
-    private function getPhones(array $clienteApi): array
-    {
+    /**
+     * @param object $clienteApi
+     * @return array
+     */
+    private function syncPhones(
+        object $clienteApi,
+        int $clienteId
+    ): bool {
         $phones = [
             [
                 'tipo' => PhoneType::LANDLINE,
-                'numero' => $clienteApi['telefone_principal']
+                'numero' => $clienteApi->telefone_principal
             ], [
                 'tipo' => PhoneType::CELL,
-                'numero' => $clienteApi['telefone_celular']
+                'numero' => $clienteApi->telefone_celular
             ], [
                 'tipo' => PhoneType::COMMERCIAL,
-                'numero' => $clienteApi['telefone_comercial']
+                'numero' => $clienteApi->telefone_comercial
             ],
         ];
 
-        return Arr::havingKey($phones, 'numero');
+        return Telefone::import(
+            Arr::havingKey($phones, 'numero'),
+            ['pessoa_id' => $clienteId]
+        );
     }
 
-    private function getEmails(array $clienteApi): array
-    {
+    /**
+     * @param object $clienteApi
+     * @param int $clienteId
+     * @return bool
+     */
+    private function syncEmails(
+        object $clienteApi,
+        int $clienteId
+    ): bool {
         $emails = [
             [
                 'tipo' => EmailType::PERSONAL,
-                'email' => $clienteApi['email']
+                'email' => $clienteApi->email
             ]
         ];
 
-        return Arr::havingKey($emails, 'email') ?? [];
+        return Email::import(
+            Arr::havingKey($emails, 'email'),
+            ['pessoa_id' => $clienteId]
+        );
     }
 
-    private function getAddress(array $clienteApi): array
-    {
-        foreach ($clienteApi['enderecos'] as &$endereco) {
-            $endereco['cidade_id'] = $this->getCidadeId(
-                $endereco['cidade'],
-                $endereco['estado']
+    /**
+     * @param object $clienteApi
+     * @param int $clienteId
+     * @return bool
+     */
+    private function syncAddress(
+        object $clienteApi,
+        int $clienteId
+    ): bool {
+        foreach ($clienteApi->enderecos as $endereco) {
+            $endereco->cidade_id = $this->getCidadeId(
+                $endereco->cidade,
+                $endereco->estado
             );
+            $enderecos[] = Obj::toArray($endereco);
         }
 
-        return $clienteApi['enderecos'] ?? [];
+        return Endereco::import($enderecos, ['pessoa_id' => $clienteId]);
     }
 
     /**

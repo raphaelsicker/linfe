@@ -15,6 +15,24 @@ class CreateProdutosTable extends Migration
     {
         Schema::create('produtos', function (Blueprint $table) {
             $table->id();
+            $table->string('nome');
+            $table->string('apelido')->nullable();
+            $table->string('descricao_completa');
+            $table->boolean('ativo')->default(true);
+            $table->boolean('bloqueado')->default(false);
+            $table->boolean('removido')->default(false);
+            $table->boolean('destaque')->default(false);
+            $table->boolean('usado')->default(false);
+            $table->foreignId('marca_id');
+            $table->bigInteger('pai_id')->nullable();
+            $table->integer('altura')->nullable();
+            $table->integer('largura')->nullable();
+            $table->integer('profundidade')->nullable();
+            $table->decimal('peso')->nullable();
+            $table->string('ncm');
+            $table->string('sku');
+            $table->integer('li_id')->nullable();
+
             $table->timestamps();
         });
     }

@@ -8,7 +8,6 @@ use App\Helpers\Arr;
 use App\Helpers\Str;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-use JetBrains\PhpStorm\ArrayShape;
 
 class LiApi
 {
@@ -18,7 +17,7 @@ class LiApi
      * @return Response
      */
     public static function get(
-        string $relativePath, 
+        string $relativePath,
         array $query = []
     ): Response {
         return Http::get(
@@ -34,8 +33,8 @@ class LiApi
      * @return Response
      */
     public static function find(
-        string $relativePath, 
-        string $id, 
+        string $relativePath,
+        string $id,
         array $query = []
     ): Response {
         $relativePath = Str::replace($relativePath, ['id' => $id]);

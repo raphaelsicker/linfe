@@ -44,4 +44,12 @@ class Pessoa extends Model
     {
         return $this->hasMany(Telefone::class, 'pessoa_id');
     }
+
+    public function newQuery(): Builder
+    {
+        $currentClass = (new static())::class;
+
+        return parent::newQuery()
+            ->where('classe', $currentClass);
+    }
 }

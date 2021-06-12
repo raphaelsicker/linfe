@@ -15,6 +15,11 @@ class CreateProdutoEstoquesTable extends Migration
     {
         Schema::create('produto_estoques', function (Blueprint $table) {
             $table->id();
+            $table->boolean('gerenciado')->default(true);
+            $table->integer('quantidade')->nullable();
+            $table->integer('quantidade_reservada')->nullable();
+            $table->integer('situacao_em_estoque')->nullable();
+            $table->integer('situacao_sem_estoque')->nullable();
             $table->timestamps();
         });
     }

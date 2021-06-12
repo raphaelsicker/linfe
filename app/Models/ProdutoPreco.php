@@ -7,18 +7,17 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
- * Class Marca
+ * Class ProdutoPreco
  * @package App\Models
  * @mixin Builder
  */
-class Marca extends Model
+class ProdutoPreco extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'nome',
-        'apelido',
-        'descricao',
-        'li_id'
+        'tipo',
+        'valor',
+        'produto_id',
     ];
 }

@@ -7,6 +7,7 @@ namespace App\Services\Sync;
 use App\Externals\PedidoApi;
 use App\Helpers\Arr;
 use Carbon\Carbon;
+use Throwable;
 
 class PedidoSync
 {
@@ -25,23 +26,28 @@ class PedidoSync
             $since = Carbon::now('-03:00')->subDays(3);
         }
 
-        $ultimosPedidos = PedidoApi::since($since);
+        try {
+            foreach (PedidoApi::since($since) as $pedido) {
+                $this->storePedido($pedido);
+            }
 
-        foreach ($ultimosPedidos as $pedido) {
-            $this->storePedido($pedido);
+            return true;
+        } catch (Throwable $t) {
+            return false;
         }
-
-        return true;
     }
 
-    private function storePedido(array $pedido)
+    /**
+     * @param object $pedido
+     * @return array|false
+     */
+    private function storePedido(object $pedido)
     {
-        $clienteId = $this->clienteSync->run($pedido['cliente']);
+        $clienteId = $this->clienteSync->run($pedido->cliente);
 
-        foreach ($pedido['itens'] ?? [] as $item) {
-            $items = $this->produtoSync->run($item);
+        foreach ($pedido->itens ?? [] as $item) {
+            [$produtoId, $variacoes] = $this->produtoSync->run($item);
         }
-
 
         $pedido = [
             'cliente_id' => $clienteId,

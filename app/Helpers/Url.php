@@ -17,4 +17,22 @@ class Url
             ->explode('/')
             ->last();
     }
+
+    /**
+     * Retornar o Id pela chave passada
+     * Caso a chave seja negativa contará o elemento de trás pra frente
+     * @param string $url
+     * @param int $key
+     * @return string|null
+     */
+    public static function extractParentId(string $url, int $key = -3): ?string
+    {
+        $urlFields = Str::of( $url)->explode('/');
+
+        if($key < 0) {
+            $key = $urlFields->count() + $key;
+        }
+
+        return $urlFields->get($key);
+    }
 }

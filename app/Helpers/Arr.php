@@ -62,4 +62,23 @@ class Arr extends \Illuminate\Support\Arr
 
         return $merged;
     }
+
+    /**
+     * Adiciona uma chave estrangeira a todos os elementos de um array
+     * @param array[] $array
+     * @param string $key
+     * @param mixed $value
+     * @return array
+     */
+    public static function addFk(
+        array $array,
+        string $key,
+        mixed $value
+    ): array {
+        foreach($array as &$item) {
+            self::set($item, $key, $value);
+        }
+
+        return $array;
+    }
 }

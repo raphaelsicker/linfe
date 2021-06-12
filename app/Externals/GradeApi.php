@@ -6,9 +6,9 @@ namespace App\Externals;
 
 use App\Externals\Traits\FindTrait;
 
-class ProdutoApi
+class GradeApi
 {
-    public const URL_FIND = 'produto/#id/?descricao_completa=1';
+    public const URL_FIND = 'grades/#id';
 
     use FindTrait;
 }
