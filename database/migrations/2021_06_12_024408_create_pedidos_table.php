@@ -25,6 +25,7 @@ class CreatePedidosTable extends Migration
             $table->decimal('valor_total');
             $table->bigInteger('li_id')->nullable();
 
+            $table->foreignId('situacao_id')->constrained('situacoes');
             $table->foreignId('pessoa_id')->constrained();
             $table->timestamps();
         });

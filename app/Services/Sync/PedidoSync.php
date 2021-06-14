@@ -7,11 +7,16 @@ namespace App\Services\Sync;
 use App\Exceptions\Entrega\EntregaNotCreatedException;
 use App\Exceptions\Pedido\PedidoImportErrorException;
 use App\Externals\PedidoApi;
+use App\Helpers\Obj;
 use App\Models\Cliente;
+use App\Models\FormaDePagamento;
 use App\Models\Pedido;
 use App\Models\PedidoEntrega;
+use App\Models\PedidoPagamento;
+use App\Models\Situacao;
 use Carbon\Carbon;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Throwable;
 
 class PedidoSync
@@ -30,7 +35,7 @@ class PedidoSync
     public function run(?Carbon $since = null)
     {
         try {
-            $pedidosApi = PedidoApi::since($since  ?: Carbon::now('-03:00')->subDays(3));
+            $pedidosApi = PedidoApi::since($since  ?: Carbon::now('-03:00')->subDays(7));
 
             foreach ($pedidosApi as $pedidoApi) {
                 $this->storePedido($pedidoApi);
@@ -47,6 +52,7 @@ class PedidoSync
     private function storePedido(object $pedidoApi)
     {
         try {
+            $situacao = Situacao::apiImport((array) $pedidoApi->situacao);
             $cliente = $this->clienteSync->run($pedidoApi->cliente);
 
             foreach ($pedidoApi->itens ?? [] as $item) {
@@ -62,18 +68,21 @@ class PedidoSync
                 'valor_envio' => $pedidoApi->valor_envio,
                 'valor_subtotal' => $pedidoApi->valor_subtotal,
                 'valor_total' => $pedidoApi->valor_total,
+                'situacao_id' => $situacao->id,
                 'li_id' => $pedidoApi->numero
             ], ['li_id' => $pedidoApi->numero]);
 
             $entrega = $this->entregaSync($pedido, $cliente, $pedidoApi->endereco_entrega);
+            $pagamentos = $this->pagamentosSync($pedido, $pedidoApi->pagamentos);
 
             return $pedido ?? false;
         } catch (Throwable $exception) {
+            /*
             throw new PedidoImportErrorException(
                 "Erro ao importar o pedido: ",
                 Response::HTTP_BAD_REQUEST,
                 $exception
-            );
+            );*/
         }
     }
 
@@ -102,6 +111,24 @@ class PedidoSync
                 Response::HTTP_BAD_REQUEST,
                 $exception
             );
+        }
+    }
+
+    private function pagamentosSync(
+        Pedido $pedido,
+        iterable $pagamentosApi
+    ): Collection {
+        foreach($pagamentosApi as $pagamentoApi) {
+            $formaDePagamento = Obj::toArray($pagamentoApi->forma_pagamento);
+            $pagamentoApi->forma_id = FormaDePagamento::apiImport($formaDePagamento);
+
+            $pagamentoApi->pedido_id = $pedido->id;
+            $pagamentoApi->tipo = $pagamentoApi->pagamento_tipo;
+            $pagamentoApi->numero_de_parcelas = $pagamentoApi->parcelamento?->numero_parcelas ?? null;
+            $pagamentoApi->valor_das_parcelas = $pagamentoApi->parcelamento?->valor_parcela ?? null;
+
+            $pagamento = Obj::toArray($pagamentoApi);
+            PedidoPagamento::apiImport($pagamento);
         }
     }
 
