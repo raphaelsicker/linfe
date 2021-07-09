@@ -40,7 +40,7 @@ class Model extends \Illuminate\Database\Eloquent\Model
             );
         } catch (Throwable $exception) {
             throw new ModelApiImportErrorException(
-                "Erro ao importação de api",
+                "Erro ao importar de api",
                 Response::HTTP_BAD_REQUEST,
                 $exception
             );

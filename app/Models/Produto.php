@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Base\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class Produto
@@ -34,4 +35,9 @@ class Produto extends Model
         'sku',
         'li_id'
     ];
+
+    public function precos(): HasMany
+    {
+        return $this->hasMany(ProdutoPreco::class);
+    }
 }

@@ -5,9 +5,9 @@ namespace App\Services\Sync;
 
 
 use App\Exceptions\Entrega\EntregaNotCreatedException;
+use App\Exceptions\Pagamento\PagamentoNotCreatedException;
 use App\Exceptions\Pedido\PedidoImportErrorException;
 use App\Externals\PedidoApi;
-use App\Helpers\Obj;
 use App\Models\Cliente;
 use App\Models\FormaDePagamento;
 use App\Models\Pedido;
@@ -23,7 +23,7 @@ class PedidoSync
 {
     public function __construct(
         private ClienteSync $clienteSync,
-        private ProdutoSync $produtoSync,
+        private PedidoItemSync $pedidoItemSync,
         private EnderecosSync $enderecosSync
     ) {}
 
@@ -38,7 +38,7 @@ class PedidoSync
             $pedidosApi = PedidoApi::since($since  ?: Carbon::now('-03:00')->subDays(7));
 
             foreach ($pedidosApi as $pedidoApi) {
-                $this->storePedido($pedidoApi);
+                $this->pedidoStore($pedidoApi);
             }
         } catch (Throwable $t) {
             throw new PedidoImportErrorException("Erro ao sincronizar os pedidos", Response::HTTP_BAD_REQUEST, $t);
@@ -47,43 +47,54 @@ class PedidoSync
 
     /**
      * @param object $pedidoApi
-     * @return array|false
+     * @return void
+     * @throws PedidoImportErrorException
      */
-    private function storePedido(object $pedidoApi)
+    private function pedidoStore(object $pedidoApi): void
     {
         try {
-            $situacao = Situacao::apiImport((array) $pedidoApi->situacao);
             $cliente = $this->clienteSync->run($pedidoApi->cliente);
+            $situacao = Situacao::apiImport((array) $pedidoApi->situacao);
+
+            $pedido = $this->pedidoSync($pedidoApi,$cliente, $situacao);
+            $this->entregaSync($pedido, $cliente, $pedidoApi->endereco_entrega);
+            $this->pagamentosSync($pedido, $pedidoApi->pagamentos);
 
             foreach ($pedidoApi->itens ?? [] as $item) {
-                $items[] = $this->produtoSync->run($item);
+                $this->pedidoItemSync->run($item, $pedido->id);
             }
-
-            $pedido = Pedido::updateOrCreate([
-                'pessoa_id' => $cliente->id,
-                'cliente_obs' => $pedidoApi->cliente_obs,
-                'cupom_desconto' => $pedidoApi->cupom_desconto,
-                'peso_real' => $pedidoApi->peso_real,
-                'valor_desconto' => $pedidoApi->valor_desconto,
-                'valor_envio' => $pedidoApi->valor_envio,
-                'valor_subtotal' => $pedidoApi->valor_subtotal,
-                'valor_total' => $pedidoApi->valor_total,
-                'situacao_id' => $situacao->id,
-                'li_id' => $pedidoApi->numero
-            ], ['li_id' => $pedidoApi->numero]);
-
-            $entrega = $this->entregaSync($pedido, $cliente, $pedidoApi->endereco_entrega);
-            $pagamentos = $this->pagamentosSync($pedido, $pedidoApi->pagamentos);
-
-            return $pedido ?? false;
         } catch (Throwable $exception) {
-            /*
             throw new PedidoImportErrorException(
                 "Erro ao importar o pedido: ",
                 Response::HTTP_BAD_REQUEST,
                 $exception
-            );*/
+            );
         }
+    }
+
+    /**
+     * @param object $pedidoApi
+     * @param Cliente $cliente
+     * @param Situacao $situacao
+     * @return Pedido
+     */
+    private function pedidoSync(
+        object $pedidoApi,
+        Cliente $cliente,
+        Situacao $situacao
+    ): Pedido {
+        return Pedido::updateOrCreate([
+            'pessoa_id' => $cliente->id,
+            'cliente_obs' => $pedidoApi->cliente_obs,
+            'cupom_desconto' => $pedidoApi->cupom_desconto,
+            'peso_real' => $pedidoApi->peso_real,
+            'valor_desconto' => $pedidoApi->valor_desconto,
+            'valor_envio' => $pedidoApi->valor_envio,
+            'valor_subtotal' => $pedidoApi->valor_subtotal,
+            'valor_total' => $pedidoApi->valor_total,
+            'situacao_id' => $situacao->id,
+            'li_id' => $pedidoApi->numero
+        ], ['li_id' => $pedidoApi->numero]);
     }
 
     /**
@@ -114,22 +125,35 @@ class PedidoSync
         }
     }
 
+    /**
+     * @param Pedido $pedido
+     * @param iterable $pagamentosApi
+     * @return Collection
+     * @throws PagamentoNotCreatedException
+     */
     private function pagamentosSync(
         Pedido $pedido,
         iterable $pagamentosApi
     ): Collection {
-        foreach($pagamentosApi as $pagamentoApi) {
-            $formaDePagamento = Obj::toArray($pagamentoApi->forma_pagamento);
-            $pagamentoApi->forma_id = FormaDePagamento::apiImport($formaDePagamento);
-
-            $pagamentoApi->pedido_id = $pedido->id;
-            $pagamentoApi->tipo = $pagamentoApi->pagamento_tipo;
-            $pagamentoApi->numero_de_parcelas = $pagamentoApi->parcelamento?->numero_parcelas ?? null;
-            $pagamentoApi->valor_das_parcelas = $pagamentoApi->parcelamento?->valor_parcela ?? null;
-
-            $pagamento = Obj::toArray($pagamentoApi);
-            PedidoPagamento::apiImport($pagamento);
+        try {
+            foreach ($pagamentosApi as $pagamentoApi) {
+                $formaDePagamento = FormaDePagamento::apiImport((array) $pagamentoApi->forma_pagamento);
+                $pagamento = collect($pagamentoApi)->merge([
+                    'forma_id' => $formaDePagamento->id,
+                    'pedido_id' => $pedido->id,
+                    'tipo' => $pagamentoApi->pagamento_tipo,
+                    'numero_de_parcelas' => $pagamentoApi->parcelamento?->numero_parcelas ?? null,
+                    'valor_das_parcelas' => $pagamentoApi->parcelamento?->valor_parcela ?? null,
+                ]);
+                $pagamentos[] = PedidoPagamento::apiImport($pagamento->toArray());
+            }
+            return collect($pagamentos ?? []);
+        } catch (Throwable $exception) {
+            throw new PagamentoNotCreatedException(
+                "Erro ao criar algum Pagamento",
+                Response::HTTP_BAD_REQUEST,
+                $exception
+            );
         }
     }
-
 }

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Base\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Class Pedido
@@ -22,4 +24,19 @@ class Pedido extends Model
         'valor_total',
         'li_id'
     ];
+
+    public function itens(): HasMany
+    {
+        return $this->hasMany(PedidoItem::class);
+    }
+
+    public function entrega(): HasOne
+    {
+        return $this->hasOne(PedidoEntrega::class);
+    }
+
+    public function pagamentos(): HasMany
+    {
+        return $this->hasMany(PedidoPagamento::class);
+    }
 }

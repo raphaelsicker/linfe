@@ -18,4 +18,9 @@ class PedidoPagamento extends Model
         'valor_das_parcelas',
         'li_id',
     ];
+
+    public function forma()
+    {
+        return $this->belongsTo(FormaDePagamento::class, 'forma_id');
+    }
 }
