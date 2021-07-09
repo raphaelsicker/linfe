@@ -29,20 +29,20 @@ class PedidoSync
     ) {}
 
     /**
-     * @param Carbon|null $since
-     * @return void
+     * @param Carbon $since
+     * @return int
      * @throws PedidoImportErrorException
      */
-    public function run(?Carbon $since = null)
+    public function run(Carbon $since): int
     {
         try {
-            $pedidosApi = PedidoApi::since($since  ?: Carbon::now('-03:00')->subDays(7));
+            $pedidosApi = PedidoApi::since($since);
 
             foreach ($pedidosApi as $pedidoApi) {
                 $this->pedidoStore($pedidoApi);
             }
 
-            $teste = 1;
+            return count($pedidosApi);
         } catch (Throwable $exception) {
             throw new PedidoImportErrorException(
                 "Erro ao sincronizar os pedidos",

@@ -18,9 +18,8 @@ class CreateEmailsTable extends Migration
             $table->id();
             $table->string('tipo');
             $table->string('email');
-            $table->timestamps();
-
             $table->foreignIdFor(Pessoa::class)->constrained();
+            $table->timestamps();
         });
     }
 

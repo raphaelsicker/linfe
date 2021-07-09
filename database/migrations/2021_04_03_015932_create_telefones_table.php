@@ -18,9 +18,8 @@ class CreateTelefonesTable extends Migration
             $table->id();
             $table->string('tipo');
             $table->string('numero');
-            $table->timestamps();
-
             $table->foreignIdFor(Pessoa::class)->constrained();
+            $table->timestamps();
         });
     }
 

@@ -16,6 +16,7 @@ use Throwable;
  * Class Model
  * @package App\Models\Base
  * @mixin Builder
+ * @method static count()
  */
 class Model extends \Illuminate\Database\Eloquent\Model
 {

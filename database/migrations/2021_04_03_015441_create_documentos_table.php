@@ -20,9 +20,8 @@ class CreateDocumentosTable extends Migration
             $table->string('documento');
             $table->string('orgao_emissor')->nullable();
             $table->date('data_emissao')->nullable();
-            $table->timestamps();
-
             $table->foreignIdFor(Pessoa::class)->constrained();
+            $table->timestamps();
         });
     }
 
@@ -33,6 +32,6 @@ class CreateDocumentosTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('clientes');
+        Schema::dropIfExists('documentos');
     }
 }

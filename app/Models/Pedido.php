@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Base\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
