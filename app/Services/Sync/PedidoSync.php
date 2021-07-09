@@ -7,6 +7,7 @@ namespace App\Services\Sync;
 use App\Exceptions\Entrega\EntregaNotCreatedException;
 use App\Exceptions\Pagamento\PagamentoNotCreatedException;
 use App\Exceptions\Pedido\PedidoImportErrorException;
+use App\Exceptions\PedidoItem\PedidoItemNotCreatedException;
 use App\Externals\PedidoApi;
 use App\Models\Cliente;
 use App\Models\FormaDePagamento;
@@ -40,8 +41,14 @@ class PedidoSync
             foreach ($pedidosApi as $pedidoApi) {
                 $this->pedidoStore($pedidoApi);
             }
-        } catch (Throwable $t) {
-            throw new PedidoImportErrorException("Erro ao sincronizar os pedidos", Response::HTTP_BAD_REQUEST, $t);
+
+            $teste = 1;
+        } catch (Throwable $exception) {
+            throw new PedidoImportErrorException(
+                "Erro ao sincronizar os pedidos",
+                Response::HTTP_BAD_REQUEST,
+                $exception
+            );
         }
     }
 
@@ -83,18 +90,26 @@ class PedidoSync
         Cliente $cliente,
         Situacao $situacao
     ): Pedido {
-        return Pedido::updateOrCreate([
-            'pessoa_id' => $cliente->id,
-            'cliente_obs' => $pedidoApi->cliente_obs,
-            'cupom_desconto' => $pedidoApi->cupom_desconto,
-            'peso_real' => $pedidoApi->peso_real,
-            'valor_desconto' => $pedidoApi->valor_desconto,
-            'valor_envio' => $pedidoApi->valor_envio,
-            'valor_subtotal' => $pedidoApi->valor_subtotal,
-            'valor_total' => $pedidoApi->valor_total,
-            'situacao_id' => $situacao->id,
-            'li_id' => $pedidoApi->numero
-        ], ['li_id' => $pedidoApi->numero]);
+        try {
+            return Pedido::updateOrCreate([
+                'pessoa_id' => $cliente->id,
+                'cliente_obs' => $pedidoApi->cliente_obs,
+                'cupom_desconto' => $pedidoApi?->cupom_desconto?->codigo,
+                'peso_real' => $pedidoApi->peso_real,
+                'valor_desconto' => $pedidoApi->valor_desconto,
+                'valor_envio' => $pedidoApi->valor_envio,
+                'valor_subtotal' => $pedidoApi->valor_subtotal,
+                'valor_total' => $pedidoApi->valor_total,
+                'situacao_id' => $situacao->id,
+                'li_id' => $pedidoApi->numero
+            ], ['li_id' => $pedidoApi->numero]);
+        } catch (Throwable $exception) {
+            throw new PedidoItemNotCreatedException(
+                "Erro ao salvar o Pedido: {$pedidoApi->numero}",
+                Response::HTTP_BAD_REQUEST,
+                $exception,
+            );
+        }
     }
 
     /**
