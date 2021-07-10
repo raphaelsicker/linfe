@@ -25,7 +25,8 @@ class PedidoSync
     public function __construct(
         private ClienteSync $clienteSync,
         private PedidoItemSync $pedidoItemSync,
-        private EnderecosSync $enderecosSync
+        private EnderecosSync $enderecosSync,
+        private SituacaoSync $situacaoSync
     ) {}
 
     /**
@@ -36,6 +37,7 @@ class PedidoSync
     public function run(Carbon $since): int
     {
         try {
+            $this->situacaoSync->run();
             $pedidosApi = PedidoApi::since($since);
 
             foreach ($pedidosApi as $pedidoApi) {

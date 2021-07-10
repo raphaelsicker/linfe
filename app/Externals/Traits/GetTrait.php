@@ -4,24 +4,31 @@
 namespace App\Externals\Traits;
 
 
+use App\Enums\ReturnType;
 use App\Externals\Base\LiApi;
+use App\Helpers\Obj;
 
 trait GetTrait
 {
     /**
      * @param array $params
-     * @return array
+     * @param string $returnType
+     * @return array|object|null
      */
-    public static function get(array $params = []): array
-    {
+    public static function get(
+        array $params = [],
+        string $returnType = ReturnType::OBJECT
+    ): array|object|null {
         $response = LiApi::get(self::URL_GET, $params);
 
-        if($response->ok()) {
-            foreach($response->object()?->objects ?? [] as $pedido) {
-                $pedidos[] = self::find($pedido->numero);
-            }
+        if(!$response->ok()) {
+            return null;
         }
 
-        return $pedidos ?? [];
+        $objects = $response->object()?->objects;
+
+        return $returnType == ReturnType::ARRAY
+            ? Obj::toArray((object) $objects)
+            : $objects;
     }
 }
