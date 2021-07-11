@@ -29,7 +29,7 @@ class PedidoSyncTest extends TestCase
 
     public function testPedidoSyncJob()
     {
-        $expectedPedidos = PedidoSyncJob::dispatchNow();
+        $expectedPedidos = PedidoSyncJob::dispatchSync();
         $this->assertEquals($expectedPedidos, Pedido::count());
     }
 }
