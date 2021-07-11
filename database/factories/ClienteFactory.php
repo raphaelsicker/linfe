@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\Gender;
+use App\Enums\PersonType;
 use App\Models\Cliente;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,7 +24,13 @@ class ClienteFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'nome' => 'Maria da Consolação',
+            'razao_social' => null,
+            'sexo' => Gender::FEMALE,
+            'data_nascimento' => '1998-01-01',
+            'tipo_de_pessoa' => PersonType::PF,
+            'grupo_id' => null,
+            'li_id' => null
         ];
     }
 }

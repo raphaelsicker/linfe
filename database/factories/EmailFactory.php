@@ -2,19 +2,19 @@
 
 namespace Database\Factories;
 
-use App\Enums\PhoneType;
+use App\Enums\EmailType;
 use App\Models\Cliente;
-use App\Models\Telefone;
+use App\Models\Email;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class TelefoneFactory extends Factory
+class EmailFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Telefone::class;
+    protected $model = Email::class;
 
     /**
      * Define the model's default state.
@@ -25,8 +25,8 @@ class TelefoneFactory extends Factory
     {
         return [
             'pessoa_id' => Cliente::first() ?? Cliente::factory()->create(),
-            'tipo' => PhoneType::CELL,
-            'numero' => '21983881123'
+            'tipo' => EmailType::PERSONAL,
+            'email' => 'raphaelsicker@hotmail.com'
         ];
     }
 }

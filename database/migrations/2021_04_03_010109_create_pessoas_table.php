@@ -17,7 +17,6 @@ class CreatePessoasTable extends Migration
     {
         Schema::create('pessoas', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
             $table->string('classe');
             $table->string('nome');
             $table->string('razao_social')->nullable();
@@ -26,6 +25,7 @@ class CreatePessoasTable extends Migration
             $table->bigInteger('li_id')->nullable();
             $table->enum('tipo_de_pessoa', PersonType::keys());
             $table->enum('sexo', Gender::keys())->nullable();
+            $table->timestamps();
         });
     }
 

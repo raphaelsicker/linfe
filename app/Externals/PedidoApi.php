@@ -7,6 +7,7 @@ namespace App\Externals;
 use App\Externals\Base\LiApi;
 use App\Externals\Traits\FindTrait;
 use App\Externals\Traits\GetTrait;
+use App\Helpers\Arr;
 use Carbon\Carbon;
 
 class PedidoApi
@@ -18,13 +19,15 @@ class PedidoApi
 
     /**
      * @param Carbon $since
+     * @param array $params
      * @return array
      */
-    public static function since(Carbon $since): array
-    {
-        return self::get([
-            'since_atualizado' => $since->toDateTimeLocalString()
-        ]);
+    public static function since(
+        Carbon $since,
+        array $params = []
+    ): array {
+        $params['since_atualizado'] = $since->toDateTimeLocalString();
+        return self::get($params);
     }
 
     /**

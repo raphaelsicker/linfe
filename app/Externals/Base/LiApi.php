@@ -38,7 +38,7 @@ class LiApi
         string $id,
         array $query = []
     ): Response {
-        $relativePath = Str::replace($relativePath, ['id' => $id]);
+        $relativePath = Str::replaceFromVars($relativePath, ['id' => $id]);
 
         return Http::get(
             self::makeUrl($relativePath),
@@ -52,7 +52,7 @@ class LiApi
      */
     private static function makeUrl(string $relativePath): string
     {
-        return Str::replace('#baseUrl/#version/#relativePath', [
+        return Str::replaceFromVars('#baseUrl/#version/#relativePath', [
             'baseUrl' => env('LI_API_BASE_URL'),
             'version' => env('LI_API_VERSION'),
             'relativePath' => $relativePath

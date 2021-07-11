@@ -15,7 +15,7 @@ class Str extends \Illuminate\Support\Str
      * @param array $array
      * @return string
      */
-    public static function replace(string $string, array $array): string
+    public static function replaceFromVars(string $string, array $array): string
     {
         foreach ($array as $key => $value) {
             $string = self::of($string)
