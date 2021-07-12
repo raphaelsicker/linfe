@@ -2,17 +2,19 @@
 
 namespace Database\Factories;
 
-use App\Models\Estoque;
+use App\Enums\EmailType;
+use App\Models\Cliente;
+use App\Models\Marca;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ProdutoEstoqueFactory extends Factory
+class MarcaFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Estoque::class;
+    protected $model = Marca::class;
 
     /**
      * Define the model's default state.
@@ -22,9 +24,10 @@ class ProdutoEstoqueFactory extends Factory
     public function definition()
     {
         return [
-            'tipo',
-            'valor',
-            'produto_id',
+            'nome' => 'Jessicat',
+            'apelido' => 'jessicat',
+            'descricao' => 'Marca da Jessicat',
+            'li_id' => null,
         ];
     }
 }

@@ -31,8 +31,8 @@ class EnderecoFactory extends Factory
             'complemento' => 'apto 101',
             'bairro' => 'Centro',
             'cep' => '20230014',
-            'cidade_id' => Cidade::where(['']),
-            'referencia',
+            'cidade_id' => Cidade::nome('Rio de Janeiro')->first()?->id,
+            'referencia' => 'Casa amarela',
         ];
     }
 }

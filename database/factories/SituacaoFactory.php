@@ -2,17 +2,20 @@
 
 namespace Database\Factories;
 
-use App\Models\Estoque;
+use App\Enums\PhoneType;
+use App\Models\Cliente;
+use App\Models\Situacao;
+use App\Models\Telefone;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ProdutoEstoqueFactory extends Factory
+class SituacaoFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Estoque::class;
+    protected $model = Situacao::class;
 
     /**
      * Define the model's default state.
@@ -22,9 +25,9 @@ class ProdutoEstoqueFactory extends Factory
     public function definition()
     {
         return [
-            'tipo',
-            'valor',
-            'produto_id',
+            'codigo' => 'pedido_em_separacao',
+            'nome' => 'Pedido em separação',
+            'li_id' => 15
         ];
     }
 }

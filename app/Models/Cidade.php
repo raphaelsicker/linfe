@@ -26,4 +26,14 @@ class Cidade extends Model
     {
         return $this->belongsTo(Estado::class);
     }
+
+    /**
+     * @param Builder $query
+     * @param string $nome
+     * @return Builder
+     */
+    public function scopeNome(Builder $query, string $nome)
+    {
+        return $query->where('nome', $nome);
+    }
 }

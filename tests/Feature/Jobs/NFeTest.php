@@ -3,6 +3,7 @@
 namespace Tests\Feature\Jobs;
 
 use App\Jobs\MakeNFeJob;
+use App\Models\Cidade;
 use App\Models\Cliente;
 use App\Models\Pedido;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -30,13 +31,9 @@ class NFeTest extends TestCase
 
     public function testMakeNFeJob()
     {
-        $cliente = Cliente::factory()
-            ->hasDocumentos()
-            ->hasEmails()
-            ->hasTelefones()
+        $pedido = Pedido::factory()
+            ->hasItens(['quantidade' => 2])
             ->create();
-
-
 
         $expectedPedidos = MakeNFeJob::dispatchSync();
         $this->assertEquals($expectedPedidos, Pedido::count());
