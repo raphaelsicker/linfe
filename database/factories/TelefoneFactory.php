@@ -24,7 +24,6 @@ class TelefoneFactory extends Factory
     public function definition()
     {
         return [
-            'pessoa_id' => Cliente::first() ?? Cliente::factory()->create(),
             'tipo' => PhoneType::CELL,
             'numero' => '21983881123'
         ];

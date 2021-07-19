@@ -81,4 +81,24 @@ class Arr extends \Illuminate\Support\Arr
 
         return $array;
     }
+
+    /**
+     * Cria um json a partir de um array
+     * @param array $array
+     * @return false|string
+     */
+    public static function toJson(array $array): bool|string
+    {
+        return json_encode($array);
+    }
+
+    /**
+     * Cria um objeto a partir de um array
+     * @param array $array
+     * @return object
+     */
+    public static function toObject(array $array): object
+    {
+        return json_decode(self::toJson($array));
+    }
 }

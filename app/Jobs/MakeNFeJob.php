@@ -2,34 +2,32 @@
 
 namespace App\Jobs;
 
-use App\Exceptions\Pedido\PedidoImportErrorException;
 use App\Jobs\Base\Job;
+use App\Models\Pedido;
 use App\Services\NFe\NFeMaker;
-use App\Services\Sync\PedidoSync;
-use Carbon\Carbon;
 
 class MakeNFeJob extends Job
 {
-    private array $ids;
+    private int $id;
 
     /**
      * Create a new job instance.
      *
-     * @return void
+     * @param int $id
      */
-    public function __construct(array $ids = [])
+    public function __construct(int $id)
     {
-        $this->ids = $ids;
+        $this->id = $id;
     }
 
     /**
      * Execute the job.
      *
-     * @param PedidoSync $pedidoSync
-     * @return int
+     * @param NFeMaker $nfeMaker
+     * @return string|null
      */
-    public function handle(NFeMaker $nfeMaker)
+    public function handle(NFeMaker $nfeMaker): ?string
     {
-        return $nfeMaker->run($this->ids);
+        return $nfeMaker->getXML(Pedido::find($this->id));
     }
 }

@@ -24,7 +24,6 @@ class DocumentoFactory extends Factory
     public function definition()
     {
         return [
-            'pessoa_id' => Cliente::first() ?? Cliente::factory()->create(),
             'tipo' => DocumentType::CPF,
             'documento' => '615.521.110-83',
             'orgao_emissor' => null,

@@ -3,8 +3,6 @@
 namespace Tests\Feature\Jobs;
 
 use App\Jobs\MakeNFeJob;
-use App\Models\Cidade;
-use App\Models\Cliente;
 use App\Models\Pedido;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Queue;
@@ -31,11 +29,12 @@ class NFeTest extends TestCase
 
     public function testMakeNFeJob()
     {
-        $pedido = Pedido::factory()
+        Pedido::factory()
             ->hasItens(['quantidade' => 2])
             ->create();
 
-        $expectedPedidos = MakeNFeJob::dispatchSync();
+        $expectedPedidos = MakeNFeJob::dispatchSync(Pedido::first()->id);
+
         $this->assertEquals($expectedPedidos, Pedido::count());
     }
 }

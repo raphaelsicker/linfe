@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\PersonType;
 use App\Models\Transportadora;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,7 +23,9 @@ class TransportadoraFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'nome' => 'Jadlog',
+            'razao_social' => 'Jadlog Transportadora',
+            'tipo_de_pessoa' => PersonType::PJ,
         ];
     }
 }

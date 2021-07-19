@@ -24,7 +24,6 @@ class EmailFactory extends Factory
     public function definition()
     {
         return [
-            'pessoa_id' => Cliente::first() ?? Cliente::factory()->create(),
             'tipo' => EmailType::PERSONAL,
             'email' => 'raphaelsicker@hotmail.com'
         ];

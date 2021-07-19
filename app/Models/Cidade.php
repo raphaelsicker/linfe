@@ -10,6 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Class Cidade
  * @package App\Models
  * @mixin Builder
+ *
+ * @property int id
+ * @property string nome
+ * @property int ibge
+ * @property int estado_id
+ *
+ * @property Estado estado
+ * @method static nome(string $string)
  */
 class Cidade extends Model
 {

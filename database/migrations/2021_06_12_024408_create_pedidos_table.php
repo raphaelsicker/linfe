@@ -26,7 +26,10 @@ class CreatePedidosTable extends Migration
             $table->bigInteger('li_id')->nullable();
 
             $table->foreignId('situacao_id')->constrained('situacoes');
-            $table->foreignId('pessoa_id')->constrained();
+            $table->foreignId('empresa_id')->constrained('pessoas');
+            $table->foreignId('cliente_id')->constrained('pessoas');
+            $table->foreignId('transportadora_id')->constrained('pessoas');
+
             $table->timestamps();
         });
     }

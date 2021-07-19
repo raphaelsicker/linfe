@@ -4,12 +4,30 @@ namespace App\Models;
 
 use App\Enums\PriceType;
 use App\Models\Base\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @property mixed precos
+ * Class PedidoItem
+ * @package App\Models
+ * @mixin Builder
+ *
+ * @property int id
+ * @property int pedido_d
+ * @property int produto_id
+ * @property string nome
+ * @property float quantidade
+ * @property string ncm
+ * @property float altura
+ * @property float largura
+ * @property float profundidade
+ * @property int peso
+ * @property int li_id
+ *
+ * @property Produto produto
+ *
  */
 class PedidoItem extends Model
 {

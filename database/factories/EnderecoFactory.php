@@ -24,7 +24,6 @@ class EnderecoFactory extends Factory
     public function definition()
     {
         return [
-            'pessoa_id' => Cliente::first() ?? Cliente::factory()->create(),
             'principal' => true,
             'endereco' => 'Rua Riachuelo',
             'numero' => '100',
